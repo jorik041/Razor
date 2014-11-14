@@ -1181,20 +1181,26 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
             return new TagHelperDescriptorProvider(descriptors);
         }
 
+        public override ParserContext CreateParserContext(ITextDocument input, 
+                                                          ParserBase codeParser, 
+                                                          ParserBase markupParser, 
+                                                          ParserErrorHandler errorHandler)
+        {
+            return base.CreateParserContext(input, codeParser, markupParser, errorHandler);
+        }
+
         private void EvaluateData(TagHelperDescriptorProvider provider,
                                   string documentContent,
                                   MarkupBlock expectedOutput,
                                   IEnumerable<RazorError> expectedErrors)
         {
-            var results = ParseDocument(documentContent);
-            var rewritingContext = new RewritingContext(results.Document);
+            var errorHandler = new ParserErrorHandler();
+            var results = ParseDocument(documentContent, errorHandlerSelector: () => errorHandler);
+            var rewritingContext = new RewritingContext(results.Document, errorHandler);
             new TagHelperParseTreeRewriter(provider).Rewrite(rewritingContext);
             var rewritten = rewritingContext.SyntaxTree;
 
-            // Combine the parser errors and the rewriter errors. Normally the RazorParser does this.
-            var errors = results.ParserErrors.Concat(rewritingContext.Errors).ToList();
-
-            EvaluateRazorErrors(errors, expectedErrors.ToList());
+            EvaluateRazorErrors(errorHandler.Errors.ToList(), expectedErrors.ToList());
             EvaluateParseTree(rewritten, expectedOutput);
         }
 
