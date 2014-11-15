@@ -1184,9 +1184,9 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
         public override ParserContext CreateParserContext(ITextDocument input, 
                                                           ParserBase codeParser, 
                                                           ParserBase markupParser, 
-                                                          ParserErrorHandler errorHandler)
+                                                          ParserErrorSink errorSink)
         {
-            return base.CreateParserContext(input, codeParser, markupParser, errorHandler);
+            return base.CreateParserContext(input, codeParser, markupParser, errorSink);
         }
 
         private void EvaluateData(TagHelperDescriptorProvider provider,
@@ -1194,13 +1194,13 @@ namespace Microsoft.AspNet.Razor.Test.TagHelpers
                                   MarkupBlock expectedOutput,
                                   IEnumerable<RazorError> expectedErrors)
         {
-            var errorHandler = new ParserErrorHandler();
-            var results = ParseDocument(documentContent, errorHandlerSelector: () => errorHandler);
-            var rewritingContext = new RewritingContext(results.Document, errorHandler);
+            var errorSink = new ParserErrorSink();
+            var results = ParseDocument(documentContent, errorSink);
+            var rewritingContext = new RewritingContext(results.Document, errorSink);
             new TagHelperParseTreeRewriter(provider).Rewrite(rewritingContext);
             var rewritten = rewritingContext.SyntaxTree;
 
-            EvaluateRazorErrors(errorHandler.Errors.ToList(), expectedErrors.ToList());
+            EvaluateRazorErrors(errorSink.Errors.ToList(), expectedErrors.ToList());
             EvaluateParseTree(rewritten, expectedOutput);
         }
 

@@ -149,8 +149,8 @@ namespace Microsoft.AspNet.Razor.Parser
         private ParserResults ParseCore(ITextDocument input)
         {
             // Setup the parser context
-            var errorHandler = new ParserErrorHandler();
-            var context = new ParserContext(input, CodeParser, MarkupParser, MarkupParser, errorHandler)
+            var errorSink = new ParserErrorSink();
+            var context = new ParserContext(input, CodeParser, MarkupParser, MarkupParser, errorSink)
             {
                 DesignTimeMode = DesignTimeMode
             };
@@ -165,7 +165,7 @@ namespace Microsoft.AspNet.Razor.Parser
             var results = context.CompleteParse();
 
             // Rewrite whitespace if supported
-            var rewritingContext = new RewritingContext(results.Document, errorHandler);
+            var rewritingContext = new RewritingContext(results.Document, errorSink);
             foreach (ISyntaxTreeRewriter rewriter in Optimizers)
             {
                 rewriter.Rewrite(rewritingContext);
@@ -196,7 +196,7 @@ namespace Microsoft.AspNet.Razor.Parser
             }
 
             // Return the new result
-            return new ParserResults(syntaxTree, errorHandler.Errors.ToList());
+            return new ParserResults(syntaxTree, errorSink.Errors.ToList());
         }
 
         /// <summary>

@@ -10,14 +10,14 @@ namespace Microsoft.AspNet.Razor.Parser
     /// <summary>
     /// Used to manage <see cref="RazorError"/>s encountered during the Razor parsing phase.
     /// </summary>
-    public class ParserErrorHandler
+    public class ParserErrorSink
     {
         private readonly List<RazorError> _errors;
 
         /// <summary>
-        /// Instantiates a new instance of <see cref="ParserErrorHandler"/>.
+        /// Instantiates a new instance of <see cref="ParserErrorSink"/>.
         /// </summary>
-        public ParserErrorHandler()
+        public ParserErrorSink()
         {
             _errors = new List<RazorError>();
         }

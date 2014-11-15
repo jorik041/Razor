@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser
                                                                  codeParser: new CSharpCodeParser(),
                                                                  markupParser: new HtmlMarkupParser(),
                                                                  activeParser: new CSharpCodeParser(),
-                                                                 errorHandler: new ParserErrorHandler()));
+                                                                 errorSink: new ParserErrorSink()));
             ExceptionHelpers.ValidateArgumentException(parameterName, RazorResources.ActiveParser_Must_Be_Code_Or_Markup_Parser, exception);
         }
 
@@ -36,11 +36,11 @@ namespace Microsoft.AspNet.Razor.Test.Parser
         {
             var codeParser = new CSharpCodeParser();
             var markupParser = new HtmlMarkupParser();
-            var errorHandler = new ParserErrorHandler();
+            var errorSink = new ParserErrorSink();
             new ParserContext(
-                new SeekableTextReader(TextReader.Null), codeParser, markupParser, codeParser, errorHandler);
+                new SeekableTextReader(TextReader.Null), codeParser, markupParser, codeParser, errorSink);
             new ParserContext(
-                new SeekableTextReader(TextReader.Null), codeParser, markupParser, markupParser, errorHandler);
+                new SeekableTextReader(TextReader.Null), codeParser, markupParser, markupParser, errorSink);
         }
 
         [Fact]
@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser
                                             expectedCodeParser,
                                             expectedMarkupParser,
                                             expectedCodeParser,
-                                            new ParserErrorHandler());
+                                            new ParserErrorSink());
 
             // Assert
             Assert.NotNull(context.Source);
@@ -233,7 +233,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser
                 codeParser,
                 markupParser,
                 activeParser,
-                new ParserErrorHandler());
+                new ParserErrorSink());
 
             positioningAction(context.Source);
             return context;

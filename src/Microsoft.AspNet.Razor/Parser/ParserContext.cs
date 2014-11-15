@@ -21,13 +21,13 @@ namespace Microsoft.AspNet.Razor.Parser
         private bool _terminated = false;
 
         private Stack<BlockBuilder> _blockStack = new Stack<BlockBuilder>();
-        private readonly ParserErrorHandler _errorHandler;
+        private readonly ParserErrorSink _errorSink;
 
         public ParserContext([NotNull] ITextDocument source,
                              [NotNull] ParserBase codeParser,
                              [NotNull] ParserBase markupParser,
                              [NotNull] ParserBase activeParser,
-                             [NotNull] ParserErrorHandler errorHandler)
+                             [NotNull] ParserErrorSink errorSink)
         {
             if (activeParser != codeParser && activeParser != markupParser)
             {
@@ -40,14 +40,14 @@ namespace Microsoft.AspNet.Razor.Parser
             CodeParser = codeParser;
             MarkupParser = markupParser;
             ActiveParser = activeParser;
-            _errorHandler = errorHandler;
+            _errorSink = errorSink;
         }
 
         public IEnumerable<RazorError> Errors
         {
             get
             {
-                return _errorHandler.Errors;
+                return _errorSink.Errors;
             }
         }
 
@@ -195,7 +195,7 @@ namespace Microsoft.AspNet.Razor.Parser
             EnusreNotTerminated();
             AssertOnOwnerTask();
 
-            _errorHandler.OnError(error);
+            _errorSink.OnError(error);
         }
 
         public void OnError(SourceLocation location, string message)
@@ -203,7 +203,7 @@ namespace Microsoft.AspNet.Razor.Parser
             EnusreNotTerminated();
             AssertOnOwnerTask();
 
-            _errorHandler.OnError(location, message);
+            _errorSink.OnError(location, message);
         }
 
         public void OnError(SourceLocation location, string message, params object[] args)
@@ -225,7 +225,7 @@ namespace Microsoft.AspNet.Razor.Parser
                 throw new InvalidOperationException(RazorResources.ParserContext_CannotCompleteTree_OutstandingBlocks);
             }
 
-            return new ParserResults(_blockStack.Pop().Build(), _errorHandler.Errors.ToList());
+            return new ParserResults(_blockStack.Pop().Build(), _errorSink.Errors.ToList());
         }
 
         [Conditional("DEBUG")]

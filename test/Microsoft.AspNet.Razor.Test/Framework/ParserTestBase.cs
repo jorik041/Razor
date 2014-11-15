@@ -38,13 +38,13 @@ namespace Microsoft.AspNet.Razor.Test.Framework
         public virtual ParserContext CreateParserContext(ITextDocument input, 
                                                          ParserBase codeParser, 
                                                          ParserBase markupParser,
-                                                         ParserErrorHandler errorHandler)
+                                                         ParserErrorSink errorSink)
         {
             return new ParserContext(input, 
                                      codeParser, 
                                      markupParser, 
                                      SelectActiveParser(codeParser, markupParser), 
-                                     errorHandler);
+                                     errorSink);
         }
 
         protected abstract SpanFactory CreateSpanFactory();
@@ -153,23 +153,23 @@ namespace Microsoft.AspNet.Razor.Test.Framework
         }
 
         protected virtual ParserResults ParseDocument(string document) {
-            return ParseDocument(document, designTimeParser: false, errorHandlerSelector: null);
+            return ParseDocument(document, designTimeParser: false, errorSink: null);
         }
 
-        protected virtual ParserResults ParseDocument(string document, Func<ParserErrorHandler> errorHandlerSelector)
+        protected virtual ParserResults ParseDocument(string document, ParserErrorSink errorSink)
         {
-            return ParseDocument(document, designTimeParser: false, errorHandlerSelector: errorHandlerSelector);
+            return ParseDocument(document, designTimeParser: false, errorSink: errorSink);
         }
 
         protected virtual ParserResults ParseDocument(string document, 
                                                       bool designTimeParser, 
-                                                      Func<ParserErrorHandler> errorHandlerSelector)
+                                                      ParserErrorSink errorSink)
         {
             return RunParse(document, 
                             parser => parser.ParseDocument, 
                             designTimeParser, 
                             parserSelector: c => c.MarkupParser,
-                            errorHandlerSelector: errorHandlerSelector);
+                            errorSink: errorSink);
         }
 
         protected virtual ParserResults ParseBlock(string document) {
@@ -184,10 +184,10 @@ namespace Microsoft.AspNet.Razor.Test.Framework
                                                  Func<ParserBase, Action> parserActionSelector, 
                                                  bool designTimeParser, 
                                                  Func<ParserContext, ParserBase> parserSelector = null,
-                                                 Func<ParserErrorHandler> errorHandlerSelector = null)
+                                                 ParserErrorSink errorSink = null)
         {
             parserSelector = parserSelector ?? (c => c.ActiveParser);
-            errorHandlerSelector = errorHandlerSelector ?? (() => new ParserErrorHandler());
+            errorSink = errorSink ?? new ParserErrorSink();
 
             // Create the source
             ParserResults results = null;
@@ -197,7 +197,7 @@ namespace Microsoft.AspNet.Razor.Test.Framework
                 {
                     var codeParser = CreateCodeParser();
                     var markupParser = CreateMarkupParser();
-                    var context = CreateParserContext(reader, codeParser, markupParser, errorHandlerSelector());
+                    var context = CreateParserContext(reader, codeParser, markupParser, errorSink);
                     context.DesignTimeMode = designTimeParser;
 
                     codeParser.Context = context;
